@@ -4,7 +4,6 @@ public enum Type {
     NUMBER,
     ID,
     STRING,
-    VAR_NAME,
 
     VAR,
     PRINT,

@@ -18,6 +18,18 @@ public class Token {
 
     public Token() {}
 
+    public Type getType() {
+        return type;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
     public void setPosition(String position) {
         this.position = position;
     }
