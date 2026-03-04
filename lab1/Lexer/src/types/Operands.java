@@ -7,6 +7,16 @@ public class Operands {
             case "-": return true;
             case "/": return true;
             case "*": return true;
+            case "=": return true;
+            case "==": return true;
+            case "!=": return true;
+            case "!": return true;
+            case "<": return true;
+            case ">": return true;
+            case "<=": return true;
+            case ">=": return true;
+            case "&&": return true;
+            case "||": return true;
             default: return false;
         }
     }

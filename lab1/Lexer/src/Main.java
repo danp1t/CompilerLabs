@@ -40,16 +40,49 @@ public class Main {
                 String tokenStr = line.substring(start, pos);
 
                 //Определяем класс токена
+                if (Punctuation.isPunctuation(tokenStr)) {
+                    switch (tokenStr) {
+                        case "(" -> tokens.add(new Token(Type.LPAREN, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case ")" -> tokens.add(new Token(Type.RPAREN, tokenStr, "(" + pos + ")"));
+                        case "{" -> tokens.add(new Token(Type.LBRACE, tokenStr, "(" + pos + ")"));
+                        case "}" -> tokens.add(new Token(Type.RBRACE, tokenStr, "(" + pos + ")"));
+                        case ";" -> tokens.add(new Token(Type.SEMICOLON, tokenStr, "(" + pos + ")"));
+                    }
+                }
+
                 if (KeyWords.isKeyword(tokenStr)) {
-                    tokens.add(new Token(Type.KEYWORD, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                    switch (tokenStr) {
+                        case "print" -> tokens.add(new Token(Type.PRINT, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "if" -> tokens.add(new Token(Type.IF, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "else" -> tokens.add(new Token(Type.ELSE, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "while" -> tokens.add(new Token(Type.WHILE, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "var" -> tokens.add(new Token(Type.VAR, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                    }
                 } else if (Operands.isOperand(tokenStr)) {
-                    tokens.add(new Token(Type.OPERAND, tokenStr, "(" + lineNumber + ", " + pos + ")"));
-                } else if (Equals.isEquals(tokenStr)) {
-                    tokens.add(new Token(Type.EQUAL, tokenStr, "(" + lineNumber + ", " + pos + ")"));
-                } else if (Numbers.isNumber(tokenStr)) {
+                    switch (tokenStr) {
+                        case "+" -> tokens.add(new Token(Type.PLUS, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "-" -> tokens.add(new Token(Type.MINUS, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "*" -> tokens.add(new Token(Type.STAR, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "/" -> tokens.add(new Token(Type.SLASH, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "=" -> tokens.add(new Token(Type.EQ, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "==" -> tokens.add(new Token(Type.EQEQ, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "!" -> tokens.add(new Token(Type.EXCL, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "!=" -> tokens.add(new Token(Type.NEQ, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "<" -> tokens.add(new Token(Type.LT, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case ">" -> tokens.add(new Token(Type.GT, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "<=" -> tokens.add(new Token(Type.LTEQ, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case ">=" -> tokens.add(new Token(Type.GTEQ, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "&&" -> tokens.add(new Token(Type.AND, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                        case "||" -> tokens.add(new Token(Type.OR, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                    }
+                } else if (Primitive.isNumber(tokenStr)) {
                     tokens.add(new Token(Type.NUMBER, tokenStr, "(" + lineNumber + ", " + pos + ")"));
-                } else if (Vars.isVariable(tokenStr)) {
-                    tokens.add(new Token(Type.VARIABLE, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                }
+                else if (Primitive.isStringLiteral(tokenStr)) {
+                    tokens.add(new Token(Type.STRING, tokenStr, "(" + lineNumber + ", " + pos + ")"));
+                }
+                else if (Vars.isVariable(tokenStr)) {
+                    tokens.add(new Token(Type.VAR_NAME, tokenStr, "(" + lineNumber + ", " + pos + ")"));
                 }
             }
         }
