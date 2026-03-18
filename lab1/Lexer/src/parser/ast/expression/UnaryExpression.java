@@ -9,7 +9,7 @@ public class UnaryExpression extends Expression {
 
     public UnaryExpression(Type op, Expression operand)
     {
-        operator = op;
-        operand = operand;
+        this.operator = op;
+        this.operand = operand;
     }
 }
