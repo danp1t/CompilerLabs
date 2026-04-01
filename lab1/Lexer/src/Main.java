@@ -1,6 +1,7 @@
 import parser.Parser;
 import parser.ast.AstPrinter;
 import parser.ast.Statement;
+import semantic.SemanticAnalyzer;
 import types.*;
 
 import java.util.ArrayList;
@@ -124,6 +125,17 @@ public class Main {
             System.err.println(e.getMessage());
             return;
         }
+
+        SemanticAnalyzer analyzer = new SemanticAnalyzer();
+        analyzer.analyze(statements);
+        if (!analyzer.getErrors().isEmpty()) {
+            System.err.println("Semantic errors found:");
+            for (String error : analyzer.getErrors()) {
+                System.err.println(error);
+            }
+            return;
+        }
+
 
         System.out.println("Parsing successful! AST nodes:");
         AstPrinter.print(statements);
