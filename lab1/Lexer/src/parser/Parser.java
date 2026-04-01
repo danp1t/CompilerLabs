@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
-    private List<Token> tokens;
+    private final List<Token> tokens;
     private int position;
 
     public Parser(List<Token> tokens) {

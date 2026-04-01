@@ -13,23 +13,20 @@ public class AstPrinter {
             printStatement(stmt, 0, sb);
             sb.append("\n");
         }
-        System.out.print(sb.toString());
     }
 
     private static void printStatement(Statement stmt, int indent, StringBuilder sb) {
         String indentation = "  ".repeat(indent);
         sb.append(indentation);
 
-        if (stmt instanceof VarStatement) {
-            VarStatement var = (VarStatement) stmt;
+        if (stmt instanceof VarStatement var) {
             sb.append("var ").append(var.name);
             if (var.initializer != null) {
                 sb.append(" = ");
                 printExpression(var.initializer, 0, sb);
             }
             sb.append(";");
-        } else if (stmt instanceof IfStatement) {
-            IfStatement ifStmt = (IfStatement) stmt;
+        } else if (stmt instanceof IfStatement ifStmt) {
             sb.append("if (");
             printExpression(ifStmt.condition, 0, sb);
             sb.append(") ");
@@ -40,20 +37,17 @@ public class AstPrinter {
                 sb.append("\n");
                 printStatement(ifStmt.elseBranch, indent + 1, sb);
             }
-        } else if (stmt instanceof WhileStatement) {
-            WhileStatement whileStmt = (WhileStatement) stmt;
+        } else if (stmt instanceof WhileStatement whileStmt) {
             sb.append("while (");
             printExpression(whileStmt.condition, 0, sb);
             sb.append(") ");
             sb.append("\n");
             printStatement(whileStmt.body, indent + 1, sb);
-        } else if (stmt instanceof PrintStatement) {
-            PrintStatement printStmt = (PrintStatement) stmt;
+        } else if (stmt instanceof PrintStatement printStmt) {
             sb.append("print ");
             printExpression(printStmt.expression, 0, sb);
             sb.append(";");
-        } else if (stmt instanceof BlockStatement) {
-            BlockStatement block = (BlockStatement) stmt;
+        } else if (stmt instanceof BlockStatement block) {
             sb.append("{\n");
             for (Statement s : block.statements) {
                 printStatement(s, indent + 1, sb);
@@ -97,22 +91,22 @@ public class AstPrinter {
     }
 
     private static String operatorToString(Type op) {
-        switch (op) {
-            case PLUS: return "+";
-            case MINUS: return "-";
-            case STAR: return "*";
-            case SLASH: return "/";
-            case EQ: return "=";
-            case EQEQ: return "==";
-            case NEQ: return "!=";
-            case LT: return "<";
-            case LTEQ: return "<=";
-            case GT: return ">";
-            case GTEQ: return ">=";
-            case AND: return "&&";
-            case OR: return "||";
-            case EXCL: return "!";
-            default: return "?";
-        }
+        return switch (op) {
+            case PLUS -> "+";
+            case MINUS -> "-";
+            case STAR -> "*";
+            case SLASH -> "/";
+            case EQ -> "=";
+            case EQEQ -> "==";
+            case NEQ -> "!=";
+            case LT -> "<";
+            case LTEQ -> "<=";
+            case GT -> ">";
+            case GTEQ -> ">=";
+            case AND -> "&&";
+            case OR -> "||";
+            case EXCL -> "!";
+            default -> "?";
+        };
     }
 }
