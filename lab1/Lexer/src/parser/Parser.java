@@ -213,6 +213,14 @@ public class Parser {
             return new NumberExpression(value);
         }
 
+        if (match(Type.STRING)) {
+            String raw = previous().getValue();
+            if (raw.length() >= 2 && raw.startsWith("\"") && raw.endsWith("\"")) {
+                raw = raw.substring(1, raw.length() - 1);
+            }
+            return new StringExpression(raw);
+        }
+
         if (match(Type.ID)) {
             return new VariableExpression(previous().getValue());
         }
