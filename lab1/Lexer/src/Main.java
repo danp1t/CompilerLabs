@@ -2,22 +2,30 @@ import parser.Parser;
 import parser.ast.AstPrinter;
 import parser.ast.Statement;
 import semantic.SemanticAnalyzer;
+import interpreter.Interpreter;
 import types.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        String fileName = "./Lexer/src/program.txt";
+        List<String> lines;
+        try {
+            lines = Files.readAllLines(Paths.get(fileName));
+        } catch (IOException e) {
+            System.err.println("Error reading file: " + e.getMessage());
+            return;
+        }
+
         List<Token> tokens = new ArrayList<>();
         int lineNumber = 0;
 
-        while (scanner.hasNextLine()) {
-            String line = scanner.nextLine();
-            lineNumber++;
-
+        for (String line : lines) {
             int pos = 0;
             while (pos < line.length()) {
                 while (pos < line.length() && Character.isWhitespace(line.charAt(pos))) {
@@ -25,8 +33,22 @@ public class Main {
                 }
                 if (pos >= line.length()) break;
 
-                boolean processed = false;
+                if (line.charAt(pos) == '"') {
+                    int start = pos;
+                    pos++;
+                    while (pos < line.length() && line.charAt(pos) != '"') {
+                        pos++;
+                    }
+                    if (pos >= line.length()) {
+                        throw new RuntimeException("Unterminated string literal at line " + lineNumber);
+                    }
+                    pos++;
+                    String strToken = line.substring(start, pos);
+                    tokens.add(new Token(Type.STRING, strToken, "(" + lineNumber + ", " + start + ")"));
+                    continue;
+                }
 
+                boolean processed = false;
                 if (pos + 1 < line.length()) {
                     String twoChars = line.substring(pos, pos + 2);
                     if (twoChars.equals("==") || twoChars.equals("!=") || twoChars.equals("<=") ||
@@ -115,8 +137,6 @@ public class Main {
         }
         tokens.add(new Token(Type.EOF, "EOF", "(" + lineNumber + ")"));
 
-        scanner.close();
-
         Parser parser = new Parser(tokens);
         List<Statement> statements;
         try {
@@ -136,8 +156,14 @@ public class Main {
             return;
         }
 
-
         System.out.println("Parsing successful! AST nodes:");
         AstPrinter.print(statements);
+
+        Interpreter interpreter = new Interpreter();
+        try {
+            interpreter.interpret(statements);
+        } catch (RuntimeException e) {
+            System.err.println("Runtime error: " + e.getMessage());
+        }
     }
 }
