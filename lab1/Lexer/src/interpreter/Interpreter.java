@@ -6,6 +6,7 @@ import parser.ast.expression.*;
 import parser.ast.statement.*;
 import types.Type;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Interpreter {
@@ -50,6 +51,11 @@ public class Interpreter {
                     execute(ifStmt.elseBranch);
                 }
             }
+            case FunctionStatement func -> environment.defineFunction(func.name, func);
+            case ReturnStatement ret -> {
+                Object value = ret.value != null ? evaluate(ret.value) : null;
+                throw new ReturnException(value);
+            }
             case WhileStatement whileStmt -> {
                 while (isTruthy(evaluate(whileStmt.condition))) {
                     execute(whileStmt.body);
@@ -60,32 +66,63 @@ public class Interpreter {
     }
 
     private Object evaluate(Expression expr) {
+        Object result = null;
+
         switch (expr) {
             case NumberExpression num -> {
-                return num.value;
+                result = num.value;
             }
             case StringExpression str -> {
-                return str.value;
+                result = str.value;
             }
             case VariableExpression var -> {
-                return environment.get(var.name);
+                result = environment.get(var.name);
             }
             case AssignExpression assign -> {
                 Object value = evaluate(assign.value);
                 environment.assign(assign.name, value);
-                return value;
+                result = value;
             }
             case BinaryExpression bin -> {
                 Object left = evaluate(bin.left);
                 Object right = evaluate(bin.right);
-                return applyBinary(bin.operator, left, right);
+                result = applyBinary(bin.operator, left, right);
             }
             case UnaryExpression unary -> {
                 Object operand = evaluate(unary.operand);
-                return applyUnary(unary.operator, operand);
+                result = applyUnary(unary.operator, operand);
+            }
+            case CallExpression call -> {
+                FunctionStatement func = environment.getFunction(call.calleeName);
+                List<Object> args = new ArrayList<>();
+                for (Expression arg : call.arguments) {
+                    args.add(evaluate(arg));
+                }
+
+                RuntimeEnvironment callEnv = new RuntimeEnvironment(environment);
+                for (int i = 0; i < func.parameters.size(); i++) {
+                    callEnv.define(
+                            func.parameters.get(i),
+                            i < args.size() ? args.get(i) : null
+                    );
+                }
+
+                RuntimeEnvironment previous = this.environment;
+                this.environment = callEnv;
+                try {
+                    for (Statement stmt : func.body.statements) {
+                        execute(stmt);
+                    }
+                } catch (ReturnException ret) {
+                    result = ret.value;
+                } finally {
+                    this.environment = previous;
+                }
             }
             case null, default -> throw new RuntimeException("Unsupported expression: " + expr.getClass().getName());
         }
+
+        return result;
     }
 
     private Object applyBinary(Type operator, Object left, Object right) {

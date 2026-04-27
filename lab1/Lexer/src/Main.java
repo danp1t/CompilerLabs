@@ -92,6 +92,7 @@ public class Main {
                             case "!" -> Type.EXCL;
                             case "<" -> Type.LT;
                             case ">" -> Type.GT;
+                            case "," -> Type.COMMA;
                             default -> null;
                         };
                         tokens.add(new Token(type, oneChar, "(" + lineNumber + ", " + pos + ")"));
@@ -121,6 +122,8 @@ public class Main {
                         case "else" -> Type.ELSE;
                         case "while" -> Type.WHILE;
                         case "var" -> Type.VAR;
+                        case "fun" -> Type.FUNC;
+                        case "return" -> Type.RETURN;
                         default -> null;
                     };
                     tokens.add(new Token(type, tokenStr, "(" + lineNumber + ", " + start + ")"));

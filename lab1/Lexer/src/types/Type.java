@@ -9,12 +9,13 @@ public enum Type {
     PRINT,
     IF, ELSE,
     WHILE,      // while
+    FUNC, RETURN,
 
     // Operators
     PLUS, MINUS, STAR, SLASH,   // + - * /
     EQ, EQEQ, EXCL, NEQ,        // = == ! !=
     LT, GT, LTEQ, GTEQ,         // < > <= >=
-    AND, OR,                    // && ||
+    AND, OR, COMMA,                 // && ||
 
     // Grouping & Punctuation
     LPAREN, RPAREN, // ( )

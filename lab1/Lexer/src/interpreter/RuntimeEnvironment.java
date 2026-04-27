@@ -1,11 +1,14 @@
 package interpreter;
 
+import parser.ast.statement.FunctionStatement;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class RuntimeEnvironment {
     private final RuntimeEnvironment parent;
     private final Map<String, Object> values = new HashMap<>();
+    private final Map<String, FunctionStatement> functions = new HashMap<>();
 
     public RuntimeEnvironment() {
         this(null);
@@ -27,6 +30,18 @@ public class RuntimeEnvironment {
         } else {
             throw new RuntimeException("Undefined variable '" + name + "'");
         }
+    }
+
+    public boolean defineFunction(String name, FunctionStatement function) {
+        if (functions.containsKey(name)) return false;
+        functions.put(name, function);
+        return true;
+    }
+
+    public FunctionStatement getFunction(String name) {
+        if (functions.containsKey(name)) return functions.get(name);
+        if (parent != null) return parent.getFunction(name);
+        return null;
     }
 
     public Object get(String name) {

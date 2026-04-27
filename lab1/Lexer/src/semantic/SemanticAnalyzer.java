@@ -64,6 +64,25 @@ public class SemanticAnalyzer {
                 }
                 visitStatement(whileStmt.body);
             }
+            case FunctionStatement func -> {
+                if (!environment.defineFunction(func.name, func)) {
+                    errors.add("Function '" + func.name + "' already defined in this scope.");
+                } else {
+                    SemanticEnvironment prev = environment;
+                    environment = new SemanticEnvironment(prev);
+                    for (String param : func.parameters) {
+                        environment.defineVariable(param, ValueType.ERROR, true);
+                    }
+                    for (Statement inner : func.body.statements) {
+                        visitStatement(inner);
+                    }
+                    checkUnusedInCurrentScope();
+                    environment = prev;
+                }
+            }
+            case ReturnStatement ret -> {
+                if (ret.value != null) typeCheck(ret.value);
+            }
             case null, default -> errors.add("Unsupported statement type: " + stmt.getClass().getName());
         }
     }
@@ -79,7 +98,9 @@ public class SemanticAnalyzer {
                 }
                 ValueType type = environment.getVariableType(var.name);
                 if (type == null) {
-                    errors.add("Variable '" + var.name + "' is not initialized.");
+                    if (!environment.isVariableParameter(var.name)) {
+                        errors.add("Variable '" + var.name + "' is not initialized.");
+                    }
                     yield ValueType.ERROR;
                 }
                 environment.markUsed(var.name);
@@ -107,6 +128,20 @@ public class SemanticAnalyzer {
             case UnaryExpression unary -> {
                 ValueType operandType = typeCheck(unary.operand);
                 yield checkUnaryOperation(unary.operator, operandType);
+            }
+            case CallExpression call -> {
+                FunctionStatement func = environment.getFunction(call.calleeName);
+                if (func == null) {
+                    errors.add("Undefined function '" + call.calleeName + "'.");
+                    yield ValueType.ERROR;
+                }
+                if (call.arguments.size() != func.parameters.size()) {
+                    errors.add("Function '" + call.calleeName + "' expects " +
+                            func.parameters.size() + " arguments, got " +
+                            call.arguments.size() + ".");
+                }
+                for (Expression arg : call.arguments) typeCheck(arg);
+                yield ValueType.ERROR;  // или возвращаемый тип, если появится
             }
             case null, default -> {
                 errors.add("Unsupported expression type: " + expr.getClass().getName());

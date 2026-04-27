@@ -28,6 +28,7 @@ public class Parser {
     }
 
     private Statement parseDeclaration() {
+        if (match(Type.FUNC)) return parseFunction();
         if (match(Type.VAR)) {
             return parseVarDeclaration();
         }
@@ -35,12 +36,40 @@ public class Parser {
     }
 
     private Statement parseStatement() {
+        if (match(Type.RETURN)) return parseReturnStatement();
         if (match(Type.IF)) return parseIfStatement();
         if (match(Type.WHILE)) return parseWhileStatement();
         if (match(Type.PRINT)) return parsePrintStatement();
         if (match(Type.LBRACE)) return new BlockStatement(parseBlock());
 
         return parseExpressionStatement();
+    }
+
+    private Statement parseReturnStatement() {
+        Expression value = null;
+        if (!check(Type.SEMICOLON)) {
+            value = parseExpression();
+        }
+        consume(Type.SEMICOLON, "Expected ';' after return value.");
+        return new ReturnStatement(value);
+    }
+
+    private Statement parseFunction() {
+        Token name = consume(Type.ID, "Expected function name.");
+        consume(Type.LPAREN, "Expected '(' after function name.");
+
+        List<String> parameters = new ArrayList<>();
+        if (!check(Type.RPAREN)) {
+            do {
+                Token param = consume(Type.ID, "Expected parameter name.");
+                parameters.add(param.getValue());
+            } while (match(Type.COMMA));
+        }
+        consume(Type.RPAREN, "Expected ')' after parameters.");
+        consume(Type.LBRACE, "Expected '{' before function body.");
+
+        BlockStatement body = new BlockStatement(parseBlock());
+        return new FunctionStatement(name.getValue(), parameters, body);
     }
 
     private Statement parseVarDeclaration() {
@@ -204,7 +233,30 @@ public class Parser {
             return new UnaryExpression(op, right);
         }
 
-        return parsePrimary();
+        return parseCall();
+    }
+
+    private Expression parseCall() {
+        Expression expr = parsePrimary();
+        while (true) {
+            if (match(Type.LPAREN)) {
+                List<Expression> args = new ArrayList<>();
+                if (!check(Type.RPAREN)) {
+                    do {
+                        args.add(parseExpression());
+                    } while (match(Type.COMMA));
+                }
+                consume(Type.RPAREN, "Expected ')' after arguments.");
+                if (expr instanceof VariableExpression varExpr) {
+                    expr = new CallExpression(varExpr.name, args);
+                } else {
+                    throw new RuntimeException("Expected function name before '('");
+                }
+            } else {
+                break;
+            }
+        }
+        return expr;
     }
 
     private Expression parsePrimary() {
