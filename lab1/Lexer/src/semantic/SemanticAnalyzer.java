@@ -141,7 +141,7 @@ public class SemanticAnalyzer {
                             call.arguments.size() + ".");
                 }
                 for (Expression arg : call.arguments) typeCheck(arg);
-                yield ValueType.ERROR;  // или возвращаемый тип, если появится
+                yield ValueType.ERROR;
             }
             case null, default -> {
                 errors.add("Unsupported expression type: " + expr.getClass().getName());
