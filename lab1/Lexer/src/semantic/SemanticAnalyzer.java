@@ -89,6 +89,37 @@ public class SemanticAnalyzer {
 
     private ValueType typeCheck(Expression expr) {
         return switch (expr) {
+            case ArrayLiteralExpression arr -> {
+                for (Expression el : arr.elements) {
+                    typeCheck(el);
+                }
+                yield ValueType.ARRAY;
+            }
+
+            case IndexExpression idx -> {
+                ValueType arrType = typeCheck(idx.array);
+                if (arrType != ValueType.ARRAY) {
+                    errors.add("Index expression requires array, got " + arrType);
+                }
+                ValueType indexType = typeCheck(idx.index);
+                if (indexType != ValueType.NUMBER) {
+                    errors.add("Array index must be a number.");
+                }
+                yield ValueType.ERROR;
+            }
+
+            case ArrayAssignExpression assign -> {
+                ValueType arrType = typeCheck(assign.array);
+                if (arrType != ValueType.ARRAY) {
+                    errors.add("Assignment target must be an array.");
+                }
+                ValueType indexType = typeCheck(assign.index);
+                if (indexType != ValueType.NUMBER) {
+                    errors.add("Array index must be a number.");
+                }
+                typeCheck(assign.value);
+                yield ValueType.ERROR;
+            }
             case NumberExpression n -> ValueType.NUMBER;
             case StringExpression s -> ValueType.STRING;
             case VariableExpression var -> {
@@ -112,10 +143,13 @@ public class SemanticAnalyzer {
                     errors.add("Variable '" + assign.name + "' is not defined.");
                     yield ValueType.ERROR;
                 }
+                ValueType varType = environment.getVariableType(assign.name);
+                if (varType == ValueType.ARRAY && valueType != ValueType.ARRAY) {
+                    errors.add("Cannot assign a non-array value to array variable '" + assign.name + "'.");
+                    yield ValueType.ERROR;
+                }
                 if (!environment.assignVariable(assign.name, valueType)) {
-                    errors.add("Type mismatch in assignment to '" + assign.name +
-                            "': expected " + environment.getVariableType(assign.name) +
-                            ", got " + valueType);
+                    errors.add("Type mismatch in assignment to '" + assign.name + "'...");
                     yield ValueType.ERROR;
                 }
                 yield valueType;

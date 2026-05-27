@@ -1,11 +1,10 @@
-var kd = 130 + 129 + 214 / 12;
-var hello = "Hello, " + "world!";
+var a = [1, 2, 3];
+a[1] = 42;
+print a[1];
+print a;
 
-fun multy(x, y) {
-    return x * y;
-}
-
-var result3 = multy(kd, 50);
-
-print result3;
-print hello;
+var b = ["hello", "world"];
+b[0] = b[0] + "!";
+print b[0];
+print a;
+print b;

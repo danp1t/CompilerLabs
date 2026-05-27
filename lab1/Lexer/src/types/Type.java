@@ -20,6 +20,7 @@ public enum Type {
     // Grouping & Punctuation
     LPAREN, RPAREN, // ( )
     LBRACE, RBRACE, // { }
+    LBRACKET, RBRACKET, // [ ]
     SEMICOLON,      // ;
 
     EOF             // Конец файла

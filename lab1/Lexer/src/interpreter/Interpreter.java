@@ -69,6 +69,43 @@ public class Interpreter {
         Object result = null;
 
         switch (expr) {
+            case ArrayLiteralExpression arr -> {
+                List<Object> values = new ArrayList<>();
+                for (Expression e : arr.elements) {
+                    values.add(evaluate(e));
+                }
+                result = values;
+            }
+
+            case IndexExpression idx -> {
+                Object array = evaluate(idx.array);
+                if (!(array instanceof List)) {
+                    throw new RuntimeException("Not an array.");
+                }
+                List<Object> list = (List<Object>) array;
+                Object indexObj = evaluate(idx.index);
+                if (!(indexObj instanceof Double)) {
+                    throw new RuntimeException("Array index must be a number.");
+                }
+                int index = ((Double) indexObj).intValue();
+                result = list.get(index);
+            }
+            case ArrayAssignExpression assign -> {
+                Object array = evaluate(assign.array);
+                if (!(array instanceof List)) {
+                    throw new RuntimeException("Not an array.");
+                }
+                List<Object> list = (List<Object>) array;
+                Object indexObj = evaluate(assign.index);
+                if (!(indexObj instanceof Double)) {
+                    throw new RuntimeException("Array index must be a number.");
+                }
+                int index = ((Double) indexObj).intValue();
+                Object value = evaluate(assign.value);
+                list.set(index, value);
+                result = value;
+            }
+
             case NumberExpression num -> {
                 result = num.value;
             }

@@ -142,9 +142,10 @@ public class Parser {
             Token equals = previous();
             Expression value = parseAssignment();
 
-            if (expr instanceof VariableExpression) {
-                String name = ((VariableExpression) expr).name;
-                return new AssignExpression(name, value);
+            if (expr instanceof VariableExpression varExpr) {
+                return new AssignExpression(varExpr.name, value);
+            } else if (expr instanceof IndexExpression indexExpr) {
+                return new ArrayAssignExpression(indexExpr.array, indexExpr.index, value);
             }
 
             throw new RuntimeException("[Parser Error] Line " + equals.getPosition() +
@@ -252,6 +253,12 @@ public class Parser {
                 } else {
                     throw new RuntimeException("Expected function name before '('");
                 }
+            }
+            else if (match(Type.LBRACKET)) {
+                Expression index = parseExpression();
+                consume(Type.RBRACKET, "Expected ']' after index.");
+                expr = new IndexExpression(expr, index);
+                continue;
             } else {
                 break;
             }
@@ -260,6 +267,17 @@ public class Parser {
     }
 
     private Expression parsePrimary() {
+        if (match(Type.LBRACKET)) {
+            List<Expression> elements = new ArrayList<>();
+            if (!check(Type.RBRACKET)) {
+                do {
+                    elements.add(parseExpression());
+                } while (match(Type.COMMA));
+            }
+            consume(Type.RBRACKET, "Expected ']' after array literal.");
+            return new ArrayLiteralExpression(elements);
+        }
+
         if (match(Type.NUMBER)) {
             double value = Double.parseDouble(previous().getValue());
             return new NumberExpression(value);

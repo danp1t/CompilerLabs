@@ -78,6 +78,8 @@ public class Main {
                             case "{" -> Type.LBRACE;
                             case "}" -> Type.RBRACE;
                             case ";" -> Type.SEMICOLON;
+                            case "[" -> Type.LBRACKET;
+                            case "]" -> Type.RBRACKET;
                             default -> null;
                         };
                         tokens.add(new Token(type, oneChar, "(" + lineNumber + ", " + pos + ")"));
@@ -150,12 +152,7 @@ public class Main {
             return;
         }
 
-        System.out.println("=== AST BEFORE OPTIMIZATION ===");
-        AstPrinter.print(statements);
-
         statements = AstOptimizer.optimize(statements);
-        System.out.println("\n=== AST AFTER OPTIMIZATION ===");
-        AstPrinter.print(statements);
 
         SemanticAnalyzer analyzer = new SemanticAnalyzer();
         analyzer.analyze(statements);
