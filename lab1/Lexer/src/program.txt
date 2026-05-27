@@ -1,15 +1,11 @@
-fun add(x, y) {
-    return x + y;
-}
-
-var result = add(5, 10);
+var kd = 130 + 129 + 214 / 12;
+var hello = "Hello, " + "world!";
 
 fun multy(x, y) {
     return x * y;
 }
 
-print result;
+var result3 = multy(kd, 50);
 
-var result3 = multy(10, 50);
-
-print result3/result;
+print result3;
+print hello;
