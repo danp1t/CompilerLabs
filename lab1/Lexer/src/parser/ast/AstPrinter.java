@@ -13,80 +13,112 @@ public class AstPrinter {
             printStatement(stmt, 0, sb);
             sb.append("\n");
         }
+        System.out.print(sb.toString()); // реально выводим на консоль
     }
 
     private static void printStatement(Statement stmt, int indent, StringBuilder sb) {
         String indentation = "  ".repeat(indent);
         sb.append(indentation);
 
-        if (stmt instanceof VarStatement var) {
-            sb.append("var ").append(var.name);
-            if (var.initializer != null) {
-                sb.append(" = ");
-                printExpression(var.initializer, 0, sb);
+        switch (stmt) {
+            case VarStatement var -> {
+                sb.append("var ").append(var.name);
+                if (var.initializer != null) {
+                    sb.append(" = ");
+                    printExpression(var.initializer, sb);
+                }
+                sb.append(";");
             }
-            sb.append(";");
-        } else if (stmt instanceof IfStatement ifStmt) {
-            sb.append("if (");
-            printExpression(ifStmt.condition, 0, sb);
-            sb.append(") ");
-            sb.append("\n");
-            printStatement(ifStmt.thenBranch, indent + 1, sb);
-            if (ifStmt.elseBranch != null) {
-                sb.append("\n").append(indentation).append("else ");
+            case IfStatement ifStmt -> {
+                sb.append("if (");
+                printExpression(ifStmt.condition, sb);
+                sb.append(") ");
                 sb.append("\n");
-                printStatement(ifStmt.elseBranch, indent + 1, sb);
+                printStatement(ifStmt.thenBranch, indent + 1, sb);
+                if (ifStmt.elseBranch != null) {
+                    sb.append("\n").append(indentation).append("else ");
+                    sb.append("\n");
+                    printStatement(ifStmt.elseBranch, indent + 1, sb);
+                }
             }
-        } else if (stmt instanceof WhileStatement whileStmt) {
-            sb.append("while (");
-            printExpression(whileStmt.condition, 0, sb);
-            sb.append(") ");
-            sb.append("\n");
-            printStatement(whileStmt.body, indent + 1, sb);
-        } else if (stmt instanceof PrintStatement printStmt) {
-            sb.append("print ");
-            printExpression(printStmt.expression, 0, sb);
-            sb.append(";");
-        } else if (stmt instanceof BlockStatement block) {
-            sb.append("{\n");
-            for (Statement s : block.statements) {
-                printStatement(s, indent + 1, sb);
+            case WhileStatement whileStmt -> {
+                sb.append("while (");
+                printExpression(whileStmt.condition, sb);
+                sb.append(") ");
                 sb.append("\n");
+                printStatement(whileStmt.body, indent + 1, sb);
             }
-            sb.append(indentation).append("}");
-        } else if (stmt instanceof ExpressionStatement) {
-            ExpressionStatement exprStmt = (ExpressionStatement) stmt;
-            printExpression(exprStmt.expression, 0, sb);
-            sb.append(";");
-        } else {
-            sb.append("Unknown statement: ").append(stmt.getClass().getSimpleName());
+            case PrintStatement printStmt -> {
+                sb.append("print ");
+                printExpression(printStmt.expression, sb);
+                sb.append(";");
+            }
+            case BlockStatement block -> {
+                sb.append("{\n");
+                for (Statement s : block.statements) {
+                    printStatement(s, indent + 1, sb);
+                    sb.append("\n");
+                }
+                sb.append(indentation).append("}");
+            }
+            case ExpressionStatement exprStmt -> {
+                printExpression(exprStmt.expression, sb);
+                sb.append(";");
+            }
+            case FunctionStatement func -> {
+                sb.append("fun ").append(func.name).append("(");
+                for (int i = 0; i < func.parameters.size(); i++) {
+                    if (i > 0) sb.append(", ");
+                    sb.append(func.parameters.get(i));
+                }
+                sb.append(") ");
+                printStatement(func.body, indent, sb);
+            }
+            case ReturnStatement ret -> {
+                sb.append("return");
+                if (ret.value != null) {
+                    sb.append(" ");
+                    printExpression(ret.value, sb);
+                }
+                sb.append(";");
+            }
+            case null, default -> sb.append("Unknown statement: ").append(stmt.getClass().getSimpleName());
         }
     }
 
-    private static void printExpression(Expression expr, int indent, StringBuilder sb) {
-        if (expr instanceof AssignExpression) {
-            AssignExpression assign = (AssignExpression) expr;
-            sb.append(assign.name).append(" = ");
-            printExpression(assign.value, 0, sb);
-        } else if (expr instanceof BinaryExpression) {
-            BinaryExpression binary = (BinaryExpression) expr;
-            sb.append("(");
-            printExpression(binary.left, 0, sb);
-            sb.append(" ").append(operatorToString(binary.operator)).append(" ");
-            printExpression(binary.right, 0, sb);
-            sb.append(")");
-        } else if (expr instanceof UnaryExpression) {
-            UnaryExpression unary = (UnaryExpression) expr;
-            sb.append(operatorToString(unary.operator));
-            printExpression(unary.operand, 0, sb);
-        } else if (expr instanceof NumberExpression) {
-            NumberExpression num = (NumberExpression) expr;
-            sb.append(num.value);
-        } else if (expr instanceof VariableExpression) {
-            VariableExpression var = (VariableExpression) expr;
-            sb.append(var.name);
-        } else {
-            sb.append("?expr?");
+    private static void printExpression(Expression expr, StringBuilder sb) {
+        if (expr == null) {
+            sb.append("null");
+            return;
+        }
+        switch (expr) {
+            case AssignExpression assign -> {
+                sb.append(assign.name).append(" = ");
+                printExpression(assign.value, sb);
+            }
+            case BinaryExpression binary -> {
+                sb.append("(");
+                printExpression(binary.left, sb);
+                sb.append(" ").append(operatorToString(binary.operator)).append(" ");
+                printExpression(binary.right, sb);
+                sb.append(")");
+            }
+            case UnaryExpression unary -> {
+                sb.append(operatorToString(unary.operator));
+                printExpression(unary.operand, sb);
+            }
+            case NumberExpression num -> sb.append(num.value);
+            case StringExpression str -> sb.append("\"").append(str.value).append("\"");
+            case VariableExpression var -> sb.append(var.name);
+            case CallExpression call -> {
+                sb.append(call.calleeName).append("(");
+                for (int i = 0; i < call.arguments.size(); i++) {
+                    if (i > 0) sb.append(", ");
+                    printExpression(call.arguments.get(i), sb);
+                }
+                sb.append(")");
+            }
+            case null, default -> sb.append("?expr?");
         }
     }
 

@@ -1,3 +1,4 @@
+import optimizer.AstOptimizer;
 import parser.Parser;
 import parser.ast.AstPrinter;
 import parser.ast.Statement;
@@ -149,6 +150,13 @@ public class Main {
             return;
         }
 
+        System.out.println("=== AST BEFORE OPTIMIZATION ===");
+        AstPrinter.print(statements);
+
+        statements = AstOptimizer.optimize(statements);
+        System.out.println("\n=== AST AFTER OPTIMIZATION ===");
+        AstPrinter.print(statements);
+
         SemanticAnalyzer analyzer = new SemanticAnalyzer();
         analyzer.analyze(statements);
         if (!analyzer.getErrors().isEmpty()) {
@@ -158,9 +166,6 @@ public class Main {
             }
             return;
         }
-
-        System.out.println("Parsing successful! AST nodes:");
-        AstPrinter.print(statements);
 
         Interpreter interpreter = new Interpreter();
         try {
